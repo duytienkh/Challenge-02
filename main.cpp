@@ -63,6 +63,7 @@ void HCycle(vector<vector<int>> graph, int n){
 };
 
 void TSP_DFS(int vertex, int source, int cost, int& minCost, stack<int>& trace, stack<int>& minPath, vector<vector<int>> graph, int n, vector<bool>& visited, int remainVertices){
+    if (cost >= minCost) return; // giảm bớt số lần tìm vô nghĩa khi vét cạn 
     trace.push(vertex);
     if (!remainVertices){
         if (graph[vertex][source] != -1){
