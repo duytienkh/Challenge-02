@@ -40,7 +40,33 @@ void HPath(vector<vector<int>> graph, int n){
     if (result) cout << "Yes\n";
     else cout << "No\n";
 };
-void HCycle(){};
+
+bool HCycle_DFS(int vertex, int source, vector<vector<int>> graph, int n, vector<bool>& visited, int remainVertices){
+    if (!remainVertices){
+        return graph[vertex][source] != -1;
+    }
+    visited[vertex] = 1;
+    bool result = false;
+    for (int i = 0; i < n; i++){
+        if (!visited[i] && graph[vertex][i] != -1){ // đỉnh i chưa được thăm và có cung giữa đỉnh vertex và i
+            result = HCycle_DFS(i, source, graph, n, visited, remainVertices - 1);
+            if (result) break;
+        }
+    }
+    visited[vertex] = 0;
+    return result;
+}
+
+void HCycle(vector<vector<int>> graph, int n){
+    bool result = false;
+    vector<bool> visited(n, 0);
+    for (int i = 0; i < n; i++){
+        result = HCycle_DFS(i, i, graph, n, visited, n - 1);
+        if (result) break;
+    }
+    if (result) cout << "Yes\n";
+    else cout << "No\n";
+};
 void TSP(){};
 
 int main(int argc, char** argv){
@@ -50,6 +76,6 @@ int main(int argc, char** argv){
     
     string action(argv[1]);
     if (action == "-HPath") HPath(graph, n);
-    if (action == "-HCycle") HCycle();
+    if (action == "-HCycle") HCycle(graph, n);
     if (action == "-TSP") TSP();
 }
