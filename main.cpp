@@ -101,48 +101,60 @@ void HCycle(vector<vector<int>> graph, int n){
     else cout << "No\n";
 };
 
-void TSP_DFS(int vertex, int source, int cost, int& minCost, stack<int>& trace, stack<int>& minPath, vector<vector<int>> graph, int n, vector<bool>& visited, int remainVertices){
-    if (cost >= minCost) return; // giảm bớt số lần tìm vô nghĩa khi vét cạn 
-    trace.push(vertex);
-    if (!remainVertices){
-        if (graph[vertex][source] != -1){
-            if (minCost > cost + graph[vertex][source]){
-                minCost = cost + graph[vertex][source];
-                minPath = trace;
+void TSP_DP(vector<vector<int>> graph, int n){ // dùng quy hoạch động trạng thái
+    long long S = pow(2, n);
+    vector<vector<int>> dp(n, vector<int>(S, INT_MAX));
+
+    dp[0][1] = 0;
+
+    for (int s = 1; s < S; s++){ // duyệt qua tất cả các trạng thái
+        for (int i = 0; i < n; i++){
+            if ((s >> i) & 1){ // nếu trạng thái đang xét có chứa đỉnh i
+                for (int j = 0; j < n; j++){
+                    if (i != j && ((s >> j) & 1) && graph[i][j] != -1){
+                        if (dp[j][s ^ pow(2, i)] != INT_MAX){
+                            dp[i][s] = min(dp[i][s], dp[j][s ^ pow(2, i)] + graph[j][i]);
+                        }
+                    }
+                }
             }
         }
     }
-    visited[vertex] = 1;
-    for (int i = 0; i < n; i++){
-        if (!visited[i] && graph[vertex][i] != -1){ // đỉnh i chưa được thăm và có cung giữa đỉnh vertex và i
-            TSP_DFS(i, source, cost + graph[vertex][i], minCost, trace, minPath, graph, n, visited, remainVertices - 1);
+
+    int minCost = INT_MAX, endPoint = -1;
+    for (int i = 1; i < n; i++){
+        if (graph[0][i] == -1 || dp[i][S - 1] == INT_MAX) continue;
+        if (minCost > dp[i][S - 1] + graph[0][i]){
+            minCost = dp[i][S - 1] + graph[0][i];
+            endPoint = i;
         }
     }
-    visited[vertex] = 0;
-    trace.pop();
-}
-
-void TSP(vector<vector<int>> graph, int n){
-    vector<bool> visited(n, 0);
-    int minCost = INT_MAX;
-    stack<int> trace, minPath;
-    TSP_DFS(0, 0, 0, minCost, trace, minPath, graph, n, visited, n - 1);
-
-    if (!minPath.empty()){
-        stack<int> s;
-        while (!minPath.empty()){
-            s.push(minPath.top());
-            minPath.pop();
+    if (minCost == INT_MAX){
+        cout << -1;
+    } else {
+        stack<int> st;
+        long long s = S - 1;
+        while (endPoint != 0){
+            st.push(endPoint);
+            int tmp;
+            for (int i = 0; i < n; i++){
+                if (dp[i][s ^ (1 << endPoint)] + graph[i][endPoint] == dp[endPoint][s]){
+                    tmp = i;
+                    break;
+                }
+            }
+            s = s ^ (1 << endPoint);
+            endPoint = tmp;
         }
+        st.push(0);
 
-        while (!s.empty()){
-            cout << s.top() + 1 << ' ';
-            s.pop();
+        while (!st.empty()){
+            cout << st.top() + 1 << ' ';
+            st.pop();
         }
         cout << endl << minCost;
     }
-    else cout << -1;
-};
+}
 
 int main(int argc, char** argv){
     vector<vector<int>> graph;
@@ -152,5 +164,5 @@ int main(int argc, char** argv){
     string action(argv[1]);
     if (action == "-HPath") HPath(graph, n);
     if (action == "-HCycle") HCycle(graph, n);
-    if (action == "-TSP") TSP(graph, n);
+    if (action == "-TSP") TSP_DP(graph, n);
 }
