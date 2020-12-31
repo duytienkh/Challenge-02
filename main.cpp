@@ -5,6 +5,13 @@
 #include <queue>
 using namespace std;
 
+long long pow(int a, int b){ // tính a^b
+    if (b == 0) return 1;
+    long long tmp = pow(a, b/2);
+    if (b % 2) return tmp * tmp * a;
+    return tmp * tmp;
+}
+
 void readGraph(char* inputPath, vector<vector<int>>& graph, int& n){
     FILE* f = fopen(inputPath, "r");
     fscanf(f, "%d", &n);
@@ -19,22 +26,40 @@ void readGraph(char* inputPath, vector<vector<int>>& graph, int& n){
     fclose(f);
 }
 
-bool HPath_DFS(int vertex, vector<vector<int>> graph, int n, vector<bool>& visited, int remainVertices){
-    if (!remainVertices) return 1;
-    visited[vertex] = 1; // đã thăm đỉnh vertex
-    bool result = false;
+bool HPath_DP(vector<vector<int>> graph, int n){ // đùng quy hoạch động trạng thái
+    long long S = pow(2, n); // số lượng trạng thái
+    vector<vector<bool>> dp(n, vector<bool>(S + 1, 0));
+
     for (int i = 0; i < n; i++){
-        if (!visited[i] && graph[vertex][i] != -1){ // đỉnh i chưa được thăm và có cung giữa đỉnh vertex và i
-            result = HPath_DFS(i, graph, n, visited, remainVertices - 1);
-            if (result) break;
+        dp[i][pow(2, i)] = 1;
+    }
+
+    for (long long i = 0; i <= S; i++){ // duyệt qua tất cả các trạng thái
+        for (int j = 0; j < n; j++){
+            if ((i >> j) & 1){
+                for (int k = 0; k < n; k++){
+                    if (k != j && ((i >> k) & 1) && graph[j][k] != -1){
+                        if (dp[k][i ^ pow(2, j)]){
+                            dp[j][i] = 1;
+                            break;
+                        }
+                    }
+                }
+            }
         }
     }
-    visited[vertex] = 0;
-    return result;
+
+    for (int i = 0; i < n; i++){
+        if (dp[i][S - 1]){
+            return 1;
+        }        
+    }
+    return 0;
 }
+
 void HPath(vector<vector<int>> graph, int n){
     vector<bool> visited(n, 0);
-    bool result = HPath_DFS(0, graph, n, visited, n - 1);
+    bool result = HPath_DP(graph, n);
     if (result) cout << "Yes\n";
     else cout << "No\n";
 };
