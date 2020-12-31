@@ -64,25 +64,39 @@ void HPath(vector<vector<int>> graph, int n){
     else cout << "No\n";
 };
 
-bool HCycle_DFS(int vertex, int source, vector<vector<int>> graph, int n, vector<bool>& visited, int remainVertices){
-    if (!remainVertices){
-        return graph[vertex][source] != -1;
-    }
-    visited[vertex] = 1;
-    bool result = false;
-    for (int i = 0; i < n; i++){
-        if (!visited[i] && graph[vertex][i] != -1){ // đỉnh i chưa được thăm và có cung giữa đỉnh vertex và i
-            result = HCycle_DFS(i, source, graph, n, visited, remainVertices - 1);
-            if (result) break;
+bool HCycle_DP(vector<vector<int>> graph, int n){ // dùng quy hoạch động trạng thái
+    long long S = pow(2, n);
+
+    vector<vector<bool>> dp(n, vector<bool>(S, 0));
+
+    dp[0][1] = 1;
+
+    for (int i = 0; i < S; i++){
+        for (int j = 0; j < n; j++){
+            if ((i >> j) & 1){
+                for (int k = 0; k < n; k++){
+                    if (k != j && ((i >> k) & 1) && graph[j][k] != -1){
+                        if (dp[k][i ^ pow(2, j)]){
+                            dp[j][i] = 1;
+                            break;
+                        }
+                    }
+                }
+            }
         }
     }
-    visited[vertex] = 0;
-    return result;
+
+    for (int i = 1; i < n; i++){
+        if (dp[i][S - 1] && graph[i][0] != -1){
+            return 1;
+        }
+    }
+    return 0;
 }
 
 void HCycle(vector<vector<int>> graph, int n){
     vector<bool> visited(n, 0);
-    bool result = HCycle_DFS(0, 0, graph, n, visited, n - 1);
+    bool result = HCycle_DP(graph, n);
     if (result) cout << "Yes\n";
     else cout << "No\n";
 };
