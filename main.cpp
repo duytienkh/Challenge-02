@@ -28,13 +28,13 @@ void readGraph(char* inputPath, vector<vector<int>>& graph, int& n){
 
 bool HPath_DP(vector<vector<int>> graph, int n){ // đùng quy hoạch động trạng thái
     long long S = pow(2, n); // số lượng trạng thái
-    vector<vector<bool>> dp(n, vector<bool>(S + 1, 0));
+    vector<vector<bool>> dp(n, vector<bool>(S, 0));
 
     for (int i = 0; i < n; i++){
         dp[i][pow(2, i)] = 1;
     }
 
-    for (long long i = 0; i <= S; i++){ // duyệt qua tất cả các trạng thái
+    for (long long i = 0; i < S; i++){ // duyệt qua tất cả các trạng thái
         for (int j = 0; j < n; j++){
             if ((i >> j) & 1){
                 for (int k = 0; k < n; k++){
