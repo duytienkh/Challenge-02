@@ -26,7 +26,7 @@ void readGraph(char* inputPath, vector<vector<int>>& graph, int& n){ // đọc �
     fclose(f);
 }
 
-bool HPath_DP(vector<vector<int>> graph, int n){ // đùng quy hoạch động trạng thái
+void HPath_DP(vector<vector<int>> graph, int n){ // đùng quy hoạch động trạng thái
     long long S = POW(2, n); // số lượng trạng thái
     vector<vector<bool>> dp(n, vector<bool>(S, 0));
 
@@ -60,7 +60,7 @@ bool HPath_DP(vector<vector<int>> graph, int n){ // đùng quy hoạch động t
     else cout << "No\n";
 }
 
-bool HCycle_DP(vector<vector<int>> graph, int n){ // dùng quy hoạch động trạng thái
+void HCycle_DP(vector<vector<int>> graph, int n){ // dùng quy hoạch động trạng thái
     long long S = POW(2, n);
 
     vector<vector<bool>> dp(n, vector<bool>(S, 0));
