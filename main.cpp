@@ -5,14 +5,14 @@
 #include <queue>
 using namespace std;
 
-long long pow(int a, int b){ // tính a^b
+long long POW(int a, int b){ // tính a^b
     if (b == 0) return 1;
-    long long tmp = pow(a, b/2);
+    long long tmp = POW(a, b/2);
     if (b % 2) return tmp * tmp * a;
     return tmp * tmp;
 }
 
-void readGraph(char* inputPath, vector<vector<int>>& graph, int& n){
+void readGraph(char* inputPath, vector<vector<int>>& graph, int& n){ // đọc đồ thị
     FILE* f = fopen(inputPath, "r");
     fscanf(f, "%d", &n);
     graph = vector<vector<int>>(n, vector<int>(n, -1));
@@ -27,19 +27,19 @@ void readGraph(char* inputPath, vector<vector<int>>& graph, int& n){
 }
 
 bool HPath_DP(vector<vector<int>> graph, int n){ // đùng quy hoạch động trạng thái
-    long long S = pow(2, n); // số lượng trạng thái
+    long long S = POW(2, n); // số lượng trạng thái
     vector<vector<bool>> dp(n, vector<bool>(S, 0));
 
     for (int i = 0; i < n; i++){
-        dp[i][pow(2, i)] = 1;
+        dp[i][POW(2, i)] = 1;
     }
 
     for (long long i = 0; i < S; i++){ // duyệt qua tất cả các trạng thái
         for (int j = 0; j < n; j++){
-            if ((i >> j) & 1){
+            if ((i >> j) & 1){ // nếu trạng thái đang xét có chứa đỉnh j
                 for (int k = 0; k < n; k++){
                     if (k != j && ((i >> k) & 1) && graph[j][k] != -1){
-                        if (dp[k][i ^ pow(2, j)]){
+                        if (dp[k][i ^ POW(2, j)]){
                             dp[j][i] = 1;
                             break;
                         }
@@ -49,34 +49,30 @@ bool HPath_DP(vector<vector<int>> graph, int n){ // đùng quy hoạch động t
         }
     }
 
+    bool result = 0;
     for (int i = 0; i < n; i++){
         if (dp[i][S - 1]){
-            return 1;
+            result = 1;
+            break;
         }        
     }
-    return 0;
-}
-
-void HPath(vector<vector<int>> graph, int n){
-    vector<bool> visited(n, 0);
-    bool result = HPath_DP(graph, n);
     if (result) cout << "Yes\n";
     else cout << "No\n";
-};
+}
 
 bool HCycle_DP(vector<vector<int>> graph, int n){ // dùng quy hoạch động trạng thái
-    long long S = pow(2, n);
+    long long S = POW(2, n);
 
     vector<vector<bool>> dp(n, vector<bool>(S, 0));
 
     dp[0][1] = 1;
 
-    for (int i = 0; i < S; i++){
+    for (int i = 0; i < S; i++){ // duyệt qua tất cả các trạng thái
         for (int j = 0; j < n; j++){
-            if ((i >> j) & 1){
+            if ((i >> j) & 1){ // nếu trạng thái đang xét có chứa đỉnh j
                 for (int k = 0; k < n; k++){
                     if (k != j && ((i >> k) & 1) && graph[j][k] != -1){
-                        if (dp[k][i ^ pow(2, j)]){
+                        if (dp[k][i ^ POW(2, j)]){
                             dp[j][i] = 1;
                             break;
                         }
@@ -86,23 +82,19 @@ bool HCycle_DP(vector<vector<int>> graph, int n){ // dùng quy hoạch động t
         }
     }
 
+    bool result = 0;
     for (int i = 1; i < n; i++){
         if (dp[i][S - 1] && graph[i][0] != -1){
-            return 1;
+            result = 1;
+            break;
         }
     }
-    return 0;
-}
-
-void HCycle(vector<vector<int>> graph, int n){
-    vector<bool> visited(n, 0);
-    bool result = HCycle_DP(graph, n);
     if (result) cout << "Yes\n";
     else cout << "No\n";
-};
+}
 
 void TSP_DP(vector<vector<int>> graph, int n){ // dùng quy hoạch động trạng thái
-    long long S = pow(2, n);
+    long long S = POW(2, n);
     vector<vector<int>> dp(n, vector<int>(S, INT_MAX));
 
     dp[0][1] = 0;
@@ -112,8 +104,8 @@ void TSP_DP(vector<vector<int>> graph, int n){ // dùng quy hoạch động tr�
             if ((s >> i) & 1){ // nếu trạng thái đang xét có chứa đỉnh i
                 for (int j = 0; j < n; j++){
                     if (i != j && ((s >> j) & 1) && graph[i][j] != -1){
-                        if (dp[j][s ^ pow(2, i)] != INT_MAX){
-                            dp[i][s] = min(dp[i][s], dp[j][s ^ pow(2, i)] + graph[j][i]);
+                        if (dp[j][s ^ POW(2, i)] != INT_MAX){
+                            dp[i][s] = min(dp[i][s], dp[j][s ^ POW(2, i)] + graph[j][i]);
                         }
                     }
                 }
@@ -122,7 +114,7 @@ void TSP_DP(vector<vector<int>> graph, int n){ // dùng quy hoạch động tr�
     }
 
     int minCost = INT_MAX, endPoint = -1;
-    for (int i = 1; i < n; i++){
+    for (int i = 1; i < n; i++){ // tìm chu trình có tổng trọng số bé nhất
         if (graph[0][i] == -1 || dp[i][S - 1] == INT_MAX) continue;
         if (minCost > dp[i][S - 1] + graph[0][i]){
             minCost = dp[i][S - 1] + graph[0][i];
@@ -134,7 +126,7 @@ void TSP_DP(vector<vector<int>> graph, int n){ // dùng quy hoạch động tr�
     } else {
         stack<int> st;
         long long s = S - 1;
-        while (endPoint != 0){
+        while (endPoint != 0){ // thực hiện truy vết
             st.push(endPoint);
             int tmp;
             for (int i = 0; i < n; i++){
@@ -162,7 +154,7 @@ int main(int argc, char** argv){
     readGraph(argv[2], graph, n);
     
     string action(argv[1]);
-    if (action == "-HPath") HPath(graph, n);
-    if (action == "-HCycle") HCycle(graph, n);
+    if (action == "-HPath") HPath_DP(graph, n);
+    if (action == "-HCycle") HCycle_DP(graph, n);
     if (action == "-TSP") TSP_DP(graph, n);
 }
