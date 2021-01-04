@@ -152,6 +152,8 @@ int main(int argc, char** argv){
     vector<vector<int>> graph;
     int n;
     readGraph(argv[2], graph, n);
+
+    if (n > 30) return 0; // Out of range, too long to find solution.
     
     string action(argv[1]);
     if (action == "-HPath") HPath_DP(graph, n);
