@@ -12,7 +12,12 @@ long long POW(int a, int b){ // tính a^b
     return tmp * tmp;
 }
 
-void readGraph(char* inputPath, vector<vector<int>>& graph, int& n){ // đọc đồ thị
+void readGraph(char* inputPath, vector<vector<int>>& graph, int& n){ // đọc đồ thị, biểu diễn bằng ma trận kề
+    /*
+        inputPath: tên file chứa dữ liệu
+        graph: ma trận kề
+        n: số đỉnh của đồ thị
+    */
     FILE* f = fopen(inputPath, "r");
     fscanf(f, "%d", &n);
     graph = vector<vector<int>>(n, vector<int>(n, -1));
@@ -26,22 +31,26 @@ void readGraph(char* inputPath, vector<vector<int>>& graph, int& n){ // đọc �
     fclose(f);
 }
 
-void HPath_DP(vector<vector<int>> graph, int n){ // đùng quy hoạch động trạng thái
+void HPath_DP(vector<vector<int>> graph, int n){ // tìm đường đi Hamilton
+    /* 
+        graph: ma trận kề
+        n: số đỉnh của đồ thị
+    */
     long long S = POW(2, n); // số lượng trạng thái
-    vector<vector<bool>> dp(n, vector<bool>(S, 0));
+    vector<vector<bool>> dp(n, vector<bool>(S, 0)); // mảng chứa kết quả quy hoạch động
 
     for (int i = 0; i < n; i++){
-        dp[i][POW(2, i)] = 1;
+        dp[i][POW(2, i)] = 1; // ban đầu tồn tại đường đi đi qua một đỉnh i và kết thúc tại đỉnh i
     }
 
     for (long long i = 0; i < S; i++){ // duyệt qua tất cả các trạng thái
-        for (int j = 0; j < n; j++){
+        for (int j = 0; j < n; j++){ // duyệt qua tất cả các đỉnh
             if ((i >> j) & 1){ // nếu trạng thái đang xét có chứa đỉnh j
-                for (int k = 0; k < n; k++){
-                    if (k != j && ((i >> k) & 1) && graph[j][k] != -1){
-                        if (dp[k][i ^ POW(2, j)]){
-                            dp[j][i] = 1;
-                            break;
+                for (int k = 0; k < n; k++){ // duyệt qua tất cả các đỉnh
+                    if (k != j && ((i >> k) & 1) && graph[j][k] != -1){ // đỉnh k khác j, k có trong trạng thái đang xét và có cung nối giữa đỉnh j và k
+                        if (dp[k][i ^ POW(2, j)]){ // nếu tồn tại đường đi qua tất cả các đỉnh ngoại trừ j trong trạng thái đang xét và kết thúc tại k
+                            dp[j][i] = 1; // thì tồn tại đường đi qua các đỉnh trong trạng thái đang xét và kết thúc tại j
+                            break; 
                         }
                     }
                 }
@@ -51,7 +60,7 @@ void HPath_DP(vector<vector<int>> graph, int n){ // đùng quy hoạch động t
 
     bool result = 0;
     for (int i = 0; i < n; i++){
-        if (dp[i][S - 1]){
+        if (dp[i][S - 1]){ // tồn tại đường đi qua tất cả các đỉnh và kết thúc tại i
             result = 1;
             break;
         }        
@@ -60,7 +69,11 @@ void HPath_DP(vector<vector<int>> graph, int n){ // đùng quy hoạch động t
     else cout << "No\n";
 }
 
-void HCycle_DP(vector<vector<int>> graph, int n){ // dùng quy hoạch động trạng thái
+void HCycle_DP(vector<vector<int>> graph, int n){ // tìm chu trình Hamilton
+    /*
+        graph: ma trận kề
+        n: số đỉnh của đồ thị
+    */
     long long S = POW(2, n);
 
     vector<vector<bool>> dp(n, vector<bool>(S, 0));
