@@ -3,6 +3,7 @@
 #include <vector>
 #include <stack>
 #include <queue>
+#define INF 1000000000
 using namespace std;
 
 long long POW(int a, int b){ // tính a^b
@@ -20,7 +21,7 @@ void readGraph(char* inputPath, vector<vector<int>>& graph, int& n){ // đọc �
     */
     FILE* f = fopen(inputPath, "r");
     fscanf(f, "%d", &n);
-    graph = vector<vector<int>>(n, vector<int>(n, -1));
+    graph = vector<vector<int>>(n, vector<int>(n, INF));
     int u, v, cost;
     while (fscanf(f, "%d %d %d", &u, &v, &cost) > 0){
         u--;
@@ -47,7 +48,7 @@ void HPath_DP(vector<vector<int>> graph, int n){ // tìm đường đi Hamilton
         for (int j = 0; j < n; j++){ // duyệt qua tất cả các đỉnh
             if ((i >> j) & 1){ // nếu trạng thái đang xét có chứa đỉnh j
                 for (int k = 0; k < n; k++){ // duyệt qua tất cả các đỉnh
-                    if (k != j && ((i >> k) & 1) && graph[j][k] != -1){ // đỉnh k khác j, k có trong trạng thái đang xét và có cung nối giữa đỉnh j và k
+                    if (k != j && ((i >> k) & 1) && graph[j][k] != INF){ // đỉnh k khác j, k có trong trạng thái đang xét và có cung nối giữa đỉnh j và k
                         if (dp[k][i ^ POW(2, j)]){ // nếu tồn tại đường đi qua tất cả các đỉnh ngoại trừ j trong trạng thái đang xét và kết thúc tại k
                             dp[j][i] = 1; // thì tồn tại đường đi qua các đỉnh trong trạng thái đang xét và kết thúc tại j
                             break; 
@@ -86,7 +87,7 @@ void HCycle_DP(vector<vector<int>> graph, int n){ // tìm chu trình Hamilton
         for (int j = 0; j < n; j++){ // duyệt qua tất cả các đỉnh
             if ((i >> j) & 1){ // nếu trạng thái đang xét có chứa đỉnh j
                 for (int k = 0; k < n; k++){ // duyệt qua tất cả các đỉnh
-                    if (k != j && ((i >> k) & 1) && graph[j][k] != -1){ // đỉnh k khác j, k có trong trạng thái đang xét và có cung nối giữa j và k
+                    if (k != j && ((i >> k) & 1) && graph[j][k] != INF){ // đỉnh k khác j, k có trong trạng thái đang xét và có cung nối giữa j và k
                         if (dp[k][i ^ POW(2, j)]){ // nếu tồn tại đường đi qua tất cả các đỉnh ngoại trừ j trong trạng thái đang xét và kết thúc tại k
                             dp[j][i] = 1; // thì tồn tại đường đi qua các đỉnh trong trạng thái đang xét và kết thúc tại j
                             break;
@@ -99,7 +100,7 @@ void HCycle_DP(vector<vector<int>> graph, int n){ // tìm chu trình Hamilton
 
     bool result = 0;
     for (int i = 1; i < n; i++){ // duyệt qua tất cả các đỉnh
-        if (dp[i][S - 1] && graph[i][0] != -1){ // nếu tồn tại đường đi qua tất cả các đỉnh và kết thúc tại i, đồng thời có cung nối giữa i và đỉnh xuất phát
+        if (dp[i][S - 1] && graph[i][0] != INF){ // nếu tồn tại đường đi qua tất cả các đỉnh và kết thúc tại i, đồng thời có cung nối giữa i và đỉnh xuất phát
             result = 1;
             break;
         }
@@ -114,7 +115,7 @@ void TSP_DP(vector<vector<int>> graph, int n){ // tìm đường đi TSP
         n: số lượng đỉnh của đồ thị
     */
     long long S = POW(2, n); // số lượng trạng thái
-    vector<vector<int>> dp(n, vector<int>(S, INT_MAX)); // mảng chứa kết quả quy hoạch động, ban đầu không tồn tại đường đi nên tất cả các giá trị chi phí gán = INT_MAX
+    vector<vector<int>> dp(n, vector<int>(S, INF)); // mảng chứa kết quả quy hoạch động, ban đầu không tồn tại đường đi nên tất cả các giá trị chi phí gán = INT_MAX
 
     // tương tự như tìm chu trình Hamilton, chọn đỉnh xuất phát và kết thúc là đỉnh 0
     dp[0][1] = 0; // chi phí đường đi qua một đỉnh 0 và kết thúc tại đỉnh 0 là 0
@@ -123,25 +124,22 @@ void TSP_DP(vector<vector<int>> graph, int n){ // tìm đường đi TSP
         for (int i = 0; i < n; i++){ // duyệt qua tất cả các đỉnh
             if ((s >> i) & 1){ // nếu trạng thái đang xét có chứa đỉnh i
                 for (int j = 0; j < n; j++){ // duyệt qua tất cả các đỉnh
-                    if (i != j && ((s >> j) & 1) && graph[i][j] != -1){ // nếu đỉnh i khác j, j có trong trạng thái đang xét, có cung nối giữa i và j
-                        if (dp[j][s ^ POW(2, i)] != INT_MAX){ // nếu tồn tại đường đi qua các đỉnh trừ i trong trạng thái đang xét và kết thúc tại j
-                            dp[i][s] = min(dp[i][s], dp[j][s ^ POW(2, i)] + graph[j][i]); // tối ưu chi phí của đường đi qua tất cả các đỉnh trong trạng thái và kết thúc tại i
-                        }
+                    if ((s >> j) & 1){ //j có trong trạng thái đang xét
+                        dp[i][s] = min(dp[i][s], dp[j][s ^ POW(2, i)] + graph[j][i]); // tối ưu chi phí của đường đi qua tất cả các đỉnh trong trạng thái và kết thúc tại i
                     }
                 }
             }
         }
     }
 
-    int minCost = INT_MAX, endPoint = -1; 
+    int minCost = INF, endPoint = -1; 
     for (int i = 1; i < n; i++){ // tìm chu trình có tổng trọng số bé nhất
-        if (graph[0][i] == -1 || dp[i][S - 1] == INT_MAX) continue; // nếu không có cung nối giữa 0 và i hoặc không tồn tại đường đi qua tất cả các đỉnh và kết thúc tại i thì tìm tiếp
         if (minCost > dp[i][S - 1] + graph[0][i]){ // nếu đường đi này có chi phí nhỏ hơn thì cập nhật
             minCost = dp[i][S - 1] + graph[0][i];
             endPoint = i; // lưu lại đỉnh kết thúc của đường đi Hamilton
         }
     }
-    if (minCost == INT_MAX){ // nếu không tồn tại chu trình Hamilton
+    if (minCost == INF){ // nếu không tồn tại chu trình Hamilton
         cout << -1;
     } else { // nếu tồn tại chu trình Hamilton
         stack<int> st; // ngăn xếp lưu đường đi của chu trình
